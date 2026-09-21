@@ -1,0 +1,479 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  enthusiast
+  producer
+  admin
+}
+
+enum MemberRole {
+  owner
+  editor
+}
+
+enum ProducerStatus {
+  pending
+  verified
+  rejected
+}
+
+enum PiscoStyle {
+  puro
+  acholado
+  mosto_verde
+}
+
+enum StillType {
+  falca
+  alambique_cobre
+  otro
+}
+
+enum PiscoStatus {
+  draft
+  in_review
+  published
+  archived
+}
+
+enum PhotoKind {
+  bottle
+  label
+  lifestyle
+  cover
+}
+
+enum NoteFamily {
+  fruta
+  floral
+  herbal
+  especia
+  mineral
+  dulce
+}
+
+enum NoteSource {
+  producer
+  community
+}
+
+enum FlavourAxis {
+  cuerpo
+  dulzor
+  herbal
+  citrico
+  floral
+  alcohol
+}
+
+enum AwardLevel {
+  gran_oro
+  oro
+  plata
+  bronce
+}
+
+enum ReviewStatus {
+  visible
+  flagged
+  removed
+}
+
+enum CellarState {
+  tasted
+  wishlist
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  oauthProvider String?
+  oauthSubject  String?
+  displayName  String
+  locale       String   @default("es-PE")
+  theme        String   @default("dark")
+  /// Preferred display currency: PEN | USD | EUR.
+  currency     String   @default("PEN")
+  role         UserRole @default(enthusiast)
+  birthYear    Int?
+  createdAt    DateTime @default(now())
+
+  memberships ProducerMember[]
+  reviews     Review[]
+  cellar      CellarEntry[]
+  lists       List[]
+  scans       LabelScan[]
+  sessions    Session[]
+  listings    PriceListing[]
+
+  @@unique([oauthProvider, oauthSubject])
+}
+
+/// Opaque bearer/cookie sessions — one table serves the web cookie and the mobile token.
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+}
+
+model Region {
+  id      String   @id @default(cuid())
+  slug    String   @unique
+  name    String   @unique
+  valleys Json     @default("[]")
+  sort    Int      @default(0)
+
+  producers Producer[]
+  piscos    Pisco[]
+}
+
+model Variety {
+  id       String  @id @default(cuid())
+  slug     String  @unique
+  name     String  @unique
+  aromatic Boolean @default(false)
+  notes    String?
+  sort     Int     @default(0)
+
+  piscos PiscoVariety[]
+}
+
+model Producer {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  name          String
+  foundedYear   Int?
+  regionId      String?
+  region        Region?        @relation(fields: [regionId], references: [id])
+  valley        String?
+  description   String?
+  history       String?
+  visitInfo     String?
+  crestInitials String?
+  coverPhotoKey String?
+  website       String?
+  ruc           String?
+  contactEmail  String?
+  contactPhone  String?
+  status        ProducerStatus @default(pending)
+  verifiedAt    DateTime?
+  verifiedBy    String?
+  avgRating     Decimal?       @db.Decimal(3, 2)
+  piscoCount    Int            @default(0)
+  medalCount    Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  members ProducerMember[]
+  piscos  Pisco[]
+
+  @@index([regionId])
+}
+
+model ProducerMember {
+  producerId String
+  userId     String
+  role       MemberRole @default(owner)
+  producer   Producer   @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([producerId, userId])
+}
+
+model Pisco {
+  id            String      @id @default(cuid())
+  producerId    String
+  producer      Producer    @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  name          String
+  slug          String      @unique
+  style         PiscoStyle?
+  regionId      String?
+  region        Region?     @relation(fields: [regionId], references: [id])
+  valley        String?
+  vintage       Int?
+  abvPct        Decimal?    @db.Decimal(4, 1)
+  bottleSizeMl  Int?
+  restMonths    Int?
+  stillType     StillType?
+  distillations Int?
+  description   String?
+  status        PiscoStatus @default(draft)
+  reviewNote    String?
+  publishedAt   DateTime?
+  avgRating     Decimal?    @db.Decimal(3, 2)
+  ratingsCount  Int         @default(0)
+  minPriceCents Int?
+  featured      Boolean     @default(false)
+  /// Denormalised text the search tsvector/trigram index is built from (see migration).
+  searchText    String      @default("")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  varieties PiscoVariety[]
+  photos    PiscoPhoto[]
+  notes     PiscoTastingNote[]
+  flavours  FlavourProfile[]
+  awards    Award[]
+  prices    PriceListing[]
+  reviews   Review[]
+  cellar    CellarEntry[]
+  listItems ListItem[]
+  scans     LabelScan[]
+
+  @@index([producerId])
+  @@index([status, style])
+  @@index([status, regionId])
+  @@index([status, avgRating])
+}
+
+model PiscoVariety {
+  piscoId   String
+  varietyId String
+  sharePct  Int?
+  pisco     Pisco   @relation(fields: [piscoId], references: [id], onDelete: Cascade)
+  variety   Variety @relation(fields: [varietyId], references: [id])
+
+  @@id([piscoId, varietyId])
+  @@index([varietyId])
+}
+
+model PiscoPhoto {
+  id         String    @id @default(cuid())
+  piscoId    String
+  pisco      Pisco     @relation(fields: [piscoId], references: [id], onDelete: Cascade)
+  storageKey String
+  kind       PhotoKind @default(bottle)
+  width      Int?
+  height     Int?
+  sort       Int       @default(0)
+  isPrimary  Boolean   @default(false)
+  /// 64-bit dHash as 16 hex chars; label scanning compares Hamming distance against this.
+  phash      String?
+
+  @@index([piscoId])
+}
+
+model TastingNoteTerm {
+  id     String     @id @default(cuid())
+  termEs String     @unique
+  termEn String
+  family NoteFamily
+
+  piscos PiscoTastingNote[]
+}
+
+model PiscoTastingNote {
+  piscoId String
+  termId  String
+  addedBy NoteSource      @default(producer)
+  votes   Int             @default(0)
+  pisco   Pisco           @relation(fields: [piscoId], references: [id], onDelete: Cascade)
+  term    TastingNoteTerm @relation(fields: [termId], references: [id])
+
+  @@id([piscoId, termId])
+}
+
+model FlavourProfile {
+  piscoId        String
+  axis           FlavourAxis
+  value          Decimal     @db.Decimal(2, 1)
+  communityValue Decimal?    @db.Decimal(2, 1)
+  pisco          Pisco       @relation(fields: [piscoId], references: [id], onDelete: Cascade)
+
+  @@id([piscoId, axis])
+}
+
+model Award {
+  id          String     @id @default(cuid())
+  piscoId     String
+  pisco       Pisco      @relation(fields: [piscoId], references: [id], onDelete: Cascade)
+  competition String
+  level       AwardLevel
+  year        Int
+  sourceUrl   String?
+
+  @@index([piscoId])
+}
+
+enum RetailerKind {
+  store
+  webshop
+}
+
+enum ListingSource {
+  producer
+  community
+  admin
+}
+
+/// A place to buy: a physical store (address, optional coordinates → maps) or a webshop (website).
+model Retailer {
+  id      String       @id @default(cuid())
+  name    String
+  kind    RetailerKind @default(store)
+  website String?
+  address String?
+  /// "" rather than null so (name, city) can be the natural key.
+  city    String       @default("")
+  lat     Float?
+  lng     Float?
+  country String       @default("PE")
+
+  listings PriceListing[]
+
+  @@unique([name, city])
+}
+
+model PriceListing {
+  id         String   @id @default(cuid())
+  piscoId    String
+  retailerId String
+  priceCents Int
+  currency   String   @default("PEN")
+  url        String?
+  inStock    Boolean  @default(true)
+  source     ListingSource @default(admin)
+  /// Who spotted it, for community listings.
+  addedById  String?
+  addedBy    User?    @relation(fields: [addedById], references: [id], onDelete: SetNull)
+  updatedAt  DateTime @updatedAt
+  pisco      Pisco    @relation(fields: [piscoId], references: [id], onDelete: Cascade)
+  retailer   Retailer @relation(fields: [retailerId], references: [id], onDelete: Cascade)
+
+  @@unique([piscoId, retailerId])
+}
+
+model Review {
+  id        String       @id @default(cuid())
+  piscoId   String
+  userId    String
+  /// 10–50, i.e. score × 10, so 0.1 steps stay exact.
+  score10   Int
+  /// Optional 1–5 stars per criterion; when all are given score10 is their mean.
+  aroma      Int?
+  sabor      Int?
+  cuerpo     Int?
+  final      Int?
+  equilibrio Int?
+  body      String?
+  noteIds   String[]     @default([])
+  photoKey  String?
+  status    ReviewStatus @default(visible)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  pisco     Pisco        @relation(fields: [piscoId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([piscoId, userId])
+  @@index([piscoId, status])
+}
+
+model CellarEntry {
+  userId          String
+  piscoId         String
+  state           CellarState
+  personalScore10 Int?
+  tastedAt        DateTime?
+  note            String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pisco           Pisco       @relation(fields: [piscoId], references: [id], onDelete: Cascade)
+
+  @@id([userId, piscoId])
+  @@index([userId, state])
+}
+
+model List {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items ListItem[]
+
+  @@index([userId])
+}
+
+model ListItem {
+  listId  String
+  piscoId String
+  sort    Int    @default(0)
+  list    List   @relation(fields: [listId], references: [id], onDelete: Cascade)
+  pisco   Pisco  @relation(fields: [piscoId], references: [id], onDelete: Cascade)
+
+  @@id([listId, piscoId])
+}
+
+model LabelScan {
+  id             String   @id @default(cuid())
+  userId         String?
+  storageKey     String?
+  phash          String?
+  ocrText        String?
+  matchedPiscoId String?
+  confidence     Float?
+  createdAt      DateTime @default(now())
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  matchedPisco   Pisco?   @relation(fields: [matchedPiscoId], references: [id], onDelete: SetNull)
+}
+
+/// "Sugerir botella" — queued when a scan or search finds nothing.
+model BottleSuggestion {
+  id           String   @id @default(cuid())
+  userId       String?
+  name         String
+  producerName String?
+  photoKey     String?
+  note         String?
+  handled      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}
+
+/// Contact form submissions (public site + apps), read in /admin.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String
+  email     String
+  topic     String   @default("general")
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+/// Units of `currency` per 1 PEN. Refreshed weekly (see lib/rates.ts).
+model ExchangeRate {
+  currency  String   @id
+  perPen    Float
+  fetchedAt DateTime @default(now())
+}
