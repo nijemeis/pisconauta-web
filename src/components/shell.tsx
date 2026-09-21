@@ -31,7 +31,7 @@ export function TopBar() {
         <form action="/catalogo" onSubmit={(e) => { e.preventDefault(); const q = new FormData(e.currentTarget).get("q"); router.push(`/catalogo${q ? `?q=${encodeURIComponent(String(q))}` : ""}`); }}>
           <input className="searchbox" name="q" placeholder={t("common.searchPlaceholder")} aria-label={t("common.search")} />
         </form>
-        <Link href={isAdmin ? "/admin" : isProducer ? "/productor" : "/cuenta?rol=productor"} className="btn btn-goldline btn-sm producer-cta">{t(isAdmin ? "top.admin" : isProducer ? "top.myBodega" : "top.producerCta")}</Link>
+        <Link href={isAdmin ? "/admin" : me.user ? "/productor" : "/cuenta?rol=productor"} className="btn btn-goldline btn-sm producer-cta">{t(isAdmin ? "top.admin" : isProducer ? "top.myBodega" : "top.producerCta")}</Link>
         <LangToggle />
         <CurrencySelect />
         <ThemeToggle />

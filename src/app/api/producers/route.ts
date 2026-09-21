@@ -9,7 +9,8 @@ export const GET = route(async (req) => ({ items: await listProducers(new URL(re
 
 /** Claim/create a bodega. It starts `pending`; an admin verifies it before bottles can go public. */
 export const POST = route(async (req) => {
-  const user = await requireUser("producer");
+  // Any signed-in account can register a bodega; an aficionado becomes a producer by doing so.
+  const user = await requireUser();
   const { regionSlug, ...data } = producerInput.parse(await req.json());
   const region = regionSlug ? await db.region.findUnique({ where: { slug: regionSlug } }) : null;
   const slug = await uniqueSlug(data.name, async (s) => !!(await db.producer.findUnique({ where: { slug: s } })));
@@ -22,6 +23,7 @@ export const POST = route(async (req) => {
       ...(user.role === "admin" ? {} : { members: { create: { userId: user.id, role: "owner" as const } } }),
     },
   });
+  if (user.role === "enthusiast") await db.user.update({ where: { id: user.id }, data: { role: "producer" } });
   await db.auditLog.create({ data: { actorId: user.id, action: "producer.claim", entity: "producer", entityId: producer.id } });
   return getProducer(producer.id, { includeDrafts: true });
 });

@@ -12,6 +12,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Cuenta({ searchParams }: { searchParams: Promise<{ rol?: string; next?: string; modo?: string; error?: string }> }) {
   const sp = await searchParams;
   const user = await getUser();
-  if (user) redirect(user.role === "producer" ? "/productor" : user.role === "admin" && !sp.next ? "/admin" : sp.next?.startsWith("/") ? sp.next : "/");
+  if (user) redirect(user.role === "producer" || sp.rol === "productor" ? "/productor" : user.role === "admin" && !sp.next ? "/admin" : sp.next?.startsWith("/") ? sp.next : "/");
   return <AccountForm google={googleConfigured()} oauthError={sp.error} initialRole={sp.rol === "productor" ? "producer" : "enthusiast"} next={sp.next?.startsWith("/") ? sp.next : undefined} initialMode={sp.modo === "crear" || sp.rol === "productor" ? "signup" : "login"} />;
 }

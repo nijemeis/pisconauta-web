@@ -19,7 +19,6 @@ export default async function Productor({ searchParams }: { searchParams: Promis
   const { STATUS } = labels(t.locale);
   const { cardMeta, dec } = fmt(t.locale);
   if (!user) redirect("/cuenta?rol=productor");
-  if (user.role === "enthusiast") redirect("/");
   const isAdmin = user.role === "admin";
   // Admins step into any bodega with ?bodega=<id> to help a producer; ?nueva=1 registers one on their behalf.
   if (isAdmin && !sp.bodega && !sp.nueva) redirect("/admin?tab=bodegas");
