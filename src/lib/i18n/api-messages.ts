@@ -26,6 +26,8 @@ const EN: Record<string, string> = {
   "Ya existe": "Already exists",
   "Nota no encontrado.": "Note not found.",
   // auth
+  "Esta cuenta se creó con Google. Ingresa con el botón de Google.": "This account was created with Google. Use the Google button to sign in.",
+  "No pudimos completar el ingreso. Inténtalo de nuevo.": "We couldn't complete the sign-in. Please try again.",
   "Correo no válido.": "Invalid email address.",
   "Usa al menos 8 caracteres.": "Use at least 8 characters.",
   "Dinos tu nombre.": "Tell us your name.",

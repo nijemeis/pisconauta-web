@@ -555,4 +555,9 @@ export const en: Record<Key, string> = {
   "family.especia": "Spice",
   "family.mineral": "Mineral",
   "family.dulce": "Sweet",
+  "account.withGoogle": "Continue with Google",
+  "account.googleCancelled": "You cancelled the Google sign-in.",
+  "account.googleFailed": "We couldn't complete the Google sign-in. Please try again.",
+  "account.googleOff": "Google sign-in isn't switched on yet.",
+  "account.googleRoleHint": "With Google, a new account is created as {role}.",
 };

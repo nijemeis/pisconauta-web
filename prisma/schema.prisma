@@ -477,3 +477,13 @@ model ExchangeRate {
   perPen    Float
   fetchedAt DateTime @default(now())
 }
+
+/// One-time code that hands a finished OAuth sign-in to the mobile app (pisconauta://auth?code=…).
+/// Redeemed once, within two minutes, and only with the PKCE-style verifier the app kept to itself.
+model AuthCode {
+  codeHash  String   @id
+  userId    String
+  challenge String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

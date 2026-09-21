@@ -11,6 +11,9 @@ export const POST = route(async (req) => {
   const data = body.parse(await req.json());
   rateLimit(`login:${data.email}`, 8);
   const user = await db.user.findUnique({ where: { email: data.email } });
+  if (user && !user.passwordHash && user.oauthProvider === "google") {
+    throw new ApiError(401, "use_google", "Esta cuenta se creó con Google. Ingresa con el botón de Google.");
+  }
   if (!user?.passwordHash || !(await checkPassword(data.password, user.passwordHash))) {
     throw new ApiError(401, "bad_credentials", "Correo o contraseña incorrectos.");
   }

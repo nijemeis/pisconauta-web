@@ -554,6 +554,11 @@ export const es = {
   "family.especia": "Especia",
   "family.mineral": "Mineral",
   "family.dulce": "Dulce",
+  "account.withGoogle": "Continuar con Google",
+  "account.googleCancelled": "Cancelaste el ingreso con Google.",
+  "account.googleFailed": "No pudimos completar el ingreso con Google. Inténtalo de nuevo.",
+  "account.googleOff": "El ingreso con Google aún no está activado.",
+  "account.googleRoleHint": "Con Google, una cuenta nueva se crea como {role}.",
 } as const;
 
 export type Key = keyof typeof es;
