@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { PiscoCard as Card, SearchResult } from "@/lib/types";
 import { PiscoCard } from "@/components/pisco-card";
-import { Chakana } from "@/components/motifs";
+import { Chakana, Spinner } from "@/components/motifs";
 import { api, useSession, useT } from "@/components/session";
 
 function useSetParam() {
@@ -87,15 +87,35 @@ export function CatalogueGrid({ initial, query }: { initial: SearchResult; query
   const [compare, setCompare] = useState<string[]>([]);
   const { toast, t } = useSession();
 
-  const more = async () => {
-    setLoading(true);
+  const loadingRef = useRef(false);
+  const sentinel = useRef<HTMLDivElement>(null);
+
+  const more = useCallback(async () => {
+    if (loadingRef.current || !cursor) return;
+    loadingRef.current = true; setLoading(true);
     try {
       const next = await api<SearchResult>(`/piscos?${query}${query ? "&" : ""}cursor=${cursor}`);
       setItems((x) => [...x, ...next.items]);
       setCursor(next.nextCursor);
     } catch (e) { toast((e as Error).message); }
-    setLoading(false);
-  };
+    loadingRef.current = false; setLoading(false);
+  }, [cursor, query, toast]);
+
+  // Infinite scroll: fetch the next page once the sentinel below the grid is within 600px of the viewport.
+  useEffect(() => {
+    if (!cursor) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const check = () => {
+      timer = null;
+      const el = sentinel.current;
+      if (el && el.getBoundingClientRect().top < window.innerHeight + 600) more();
+    };
+    const onScroll = () => { if (!timer) timer = setTimeout(check, 120); };
+    check();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => { if (timer) clearTimeout(timer); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
+  }, [cursor, more]);
   const tick = (id: string) => setCompare((c) => (c.includes(id) ? c.filter((x) => x !== id) : c.length >= 4 ? (toast(t("cat.compareMax")), c) : [...c, id]));
 
   if (!items.length) {
@@ -121,7 +141,11 @@ export function CatalogueGrid({ initial, query }: { initial: SearchResult; query
           </PiscoCard>
         ))}
       </div>
-      {cursor && <div style={{ textAlign: "center", marginTop: 32 }}><button className="btn btn-outline" onClick={more} disabled={loading}>{loading ? t("cat.loading") : t("cat.more")}</button></div>}
+      {cursor && (
+        <div ref={sentinel} style={{ textAlign: "center", marginTop: 32 }}>
+          <button className="btn btn-outline" onClick={more} disabled={loading} aria-busy={loading}>{loading && <Spinner />}{loading ? t("cat.loading") : t("cat.more")}</button>
+        </div>
+      )}
       {compare.length > 0 && (
         <div className="toast" style={{ display: "flex", gap: 14, alignItems: "center", bottom: 84 }}>
           <span className="mono" style={{ color: "var(--ink-2)" }}>{t.n("cat.selected", compare.length)}</span>

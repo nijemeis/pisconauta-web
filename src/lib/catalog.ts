@@ -5,7 +5,8 @@ import { getRates, toPenCents } from "./rates";
 import { mediaUrl } from "./storage";
 import type { Facets, PiscoCard, PiscoDetail, ProducerCard, ProducerDetail, SearchParams, SearchResult } from "./types";
 
-export const PAGE_SIZE = 25;
+/** 24 fills the 4-, 3- and 2-column grids evenly. */
+export const PAGE_SIZE = 24;
 const STYLES: PiscoStyle[] = ["puro", "acholado", "mosto_verde"];
 
 const num = (d: Prisma.Decimal | null | undefined) => (d == null ? null : Number(d));
