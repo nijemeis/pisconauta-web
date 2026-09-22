@@ -210,6 +210,7 @@ export function toProducerCard(b: ProducerRow): ProducerCard {
     valley: b.valley,
     crestInitials: b.crestInitials ?? initials(b.name),
     cover: mediaUrl(b.coverPhotoKey),
+    logo: mediaUrl(b.logoPhotoKey),
     verified: b.status === "verified",
     status: b.status,
     avgRating: num(b.avgRating),
@@ -218,8 +219,12 @@ export function toProducerCard(b: ProducerRow): ProducerCard {
   };
 }
 
-export const initials = (name: string) =>
-  name.replace(/^(bodega|hacienda|destiler[ií]a|casa|viña)\s+/i, "").split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+const FILLER = new Set(["de", "del", "la", "las", "los", "el", "y", "e", "of", "the", "and", "da", "do", "dos", "das", "bodega", "hacienda", "destileria", "destilería", "casa", "viña", "vina"]);
+/** "Spirit of the Incas" → SI, "Bodega Cerro Lúcumo" → CL: first letters of the meaningful words. */
+export const initials = (name: string) => {
+  const words = name.split(/\s+/).filter((w) => w && !FILLER.has(w.toLowerCase()));
+  return (words.length ? words : name.split(/\s+/)).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+};
 
 export async function listProducers(region?: string): Promise<ProducerCard[]> {
   const rows = await db.producer.findMany({

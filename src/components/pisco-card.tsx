@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Chakana } from "./motifs";
 import type { PiscoCard as Card } from "@/lib/types";
 import { fmt, img } from "@/lib/format";
 import { useT } from "./session";
@@ -16,6 +17,16 @@ export function Photo({ src, alt, w = 400, eager, sizes }: { src: string | null;
   if (!url) return <div className="skeleton" style={{ width: "100%", height: "100%" }} />;
   // eslint-disable-next-line @next/next/no-img-element
   return <img className="photo-img" src={url} srcSet={LADDER.map((x) => `${img(src, x)} ${x}w`).join(", ")} sizes={sizes ?? `${w}px`} alt={alt} loading={eager ? "eager" : "lazy"} decoding="async" />;
+}
+
+/** Bodega crest: the uploaded logo when there is one, else chakana + initials. */
+export function Crest({ logo, initials, size = 86, className, style }: { logo: string | null; initials: string; size?: number; className?: string; style?: React.CSSProperties }) {
+  const base = { width: size, height: size, ...style };
+  if (logo) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <div className={`crest crest-logo ${className ?? ""}`} style={base}><img src={img(logo, 200)!} srcSet={`${img(logo, 200)} 1x, ${img(logo, 400)} 2x`} alt="" /></div>;
+  }
+  return <div className={`crest ${className ?? ""}`} style={{ ...base, fontSize: Math.round(size * 0.26) }}><Chakana size={Math.round(size * 0.28)} />{initials}</div>;
 }
 
 export function PiscoCard({ p, children }: { p: Card; children?: React.ReactNode }) {

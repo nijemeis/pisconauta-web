@@ -559,6 +559,9 @@ export const es = {
   "account.googleFailed": "No pudimos completar el ingreso con Google. Inténtalo de nuevo.",
   "account.googleOff": "El ingreso con Google aún no está activado.",
   "account.googleRoleHint": "Con Google, una cuenta nueva se crea como {role}.",
+  "bform.logo": "Logo de la bodega",
+  "bform.logoAdd": "+ Logo",
+  "bform.logoHint": "Cuadrado, mínimo 400 × 400 px. Se muestra recortado en círculo en tu perfil y en el catálogo. Sin logo mostramos tus iniciales.",
 } as const;
 
 export type Key = keyof typeof es;

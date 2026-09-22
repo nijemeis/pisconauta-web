@@ -3,7 +3,7 @@ import Link from "next/link";
 import { listProducers } from "@/lib/catalog";
 import { fmt } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
-import { Chakana } from "@/components/motifs";
+import { Crest } from "@/components/pisco-card";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getT())("bodegas.title") };
@@ -21,7 +21,7 @@ export default async function Bodegas() {
           <Link key={b.id} href={`/bodega/${b.slug}`} className="card" style={{ padding: 0 }}>
             <div style={{ height: 120, backgroundImage: b.cover ? `url(${b.cover}?w=600)` : undefined, backgroundSize: "cover", backgroundPosition: "center" }} className={b.cover ? "" : "skeleton"} />
             <div style={{ padding: 16, textAlign: "center" }}>
-              <div className="crest" style={{ width: 56, height: 56, marginTop: -44, fontSize: 16 }}><Chakana size={14} />{b.crestInitials}</div>
+              <Crest logo={b.logo} initials={b.crestInitials} size={56} style={{ marginTop: -44 }} />
               <div className="name">{b.name}</div>
               <div className="mono gold" style={{ marginTop: 6, letterSpacing: "0.14em" }}>{[b.valley ? t("common.valleyOf", { valley: b.valley }) : b.region?.name, b.foundedYear ? t("common.since", { year: b.foundedYear }) : null].filter(Boolean).join(" · ")}</div>
               <div className="meta" style={{ marginTop: 10 }}>{t.n("common.piscos", b.piscoCount)} · {dec(b.avgRating)} · {t.n("common.medals", b.medalCount)}</div>

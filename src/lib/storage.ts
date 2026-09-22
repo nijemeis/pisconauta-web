@@ -40,7 +40,10 @@ export const mediaUrl = (key: string | null | undefined) => (key ? `/media/${key
 
 /** Normalises an upload: auto-rotate, strip EXIF, cap at 2400px, JPEG. Derivatives are cut from this master. */
 export async function storeImage(folder: string, input: Buffer) {
-  const img = sharp(input).rotate().resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true });
+  // Logos are centre-cropped to a square so the circular crest never shows letterboxing.
+  const img = folder === "logos"
+    ? sharp(input).rotate().resize({ width: 800, height: 800, fit: "cover", position: "attention" })
+    : sharp(input).rotate().resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true });
   const { data, info } = await img.jpeg({ quality: 90, mozjpeg: true }).toBuffer({ resolveWithObject: true });
   const key = `${folder}/${randomBytes(9).toString("base64url")}.jpg`;
   await putObject(key, data);

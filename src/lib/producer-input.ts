@@ -13,4 +13,5 @@ export const producerInput = z.object({
   contactEmail: z.string().trim().email().nullish().or(z.literal("")),
   contactPhone: z.string().trim().max(30).nullish(),
   coverPhotoKey: z.string().regex(/^covers\/[\w-]+\.jpg$/).nullish(),
+  logoPhotoKey: z.string().regex(/^logos\/[\w-]+\.jpg$/).nullish(),
 });

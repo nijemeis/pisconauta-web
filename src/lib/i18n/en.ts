@@ -560,4 +560,7 @@ export const en: Record<Key, string> = {
   "account.googleFailed": "We couldn't complete the Google sign-in. Please try again.",
   "account.googleOff": "Google sign-in isn't switched on yet.",
   "account.googleRoleHint": "With Google, a new account is created as {role}.",
+  "bform.logo": "Bodega logo",
+  "bform.logoAdd": "+ Logo",
+  "bform.logoHint": "Square, at least 400 × 400 px. Shown cropped to a circle on your profile and in the catalogue. Without a logo we show your initials.",
 };

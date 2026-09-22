@@ -5,7 +5,7 @@ import { getProducer } from "@/lib/catalog";
 import { fmt } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { Chakana } from "@/components/motifs";
-import { Photo } from "@/components/pisco-card";
+import { Crest, Photo } from "@/components/pisco-card";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ tab?: string }> };
 
@@ -23,7 +23,7 @@ export default async function Bodega({ params, searchParams }: Props) {
   return (
     <main className="page" style={{ maxWidth: 1000 }}>
       <div className={`cover${b.cover ? "" : " skeleton"}`} style={b.cover ? { backgroundImage: `url(${b.cover}?w=1200)` } : undefined} />
-      <div className="crest"><Chakana size={24} />{b.crestInitials}</div>
+      <Crest logo={b.logo} initials={b.crestInitials} />
       <div style={{ textAlign: "center" }}>
         <h1 className="serif" style={{ fontSize: 32, marginTop: 12 }}>{b.name}</h1>
         <div className="mono gold" style={{ marginTop: 6 }}>

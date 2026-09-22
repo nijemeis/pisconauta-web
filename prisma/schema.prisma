@@ -167,6 +167,8 @@ model Producer {
   visitInfo     String?
   crestInitials String?
   coverPhotoKey String?
+  /// Square logo/crest uploaded by the bodega; the chakana + initials crest is the fallback.
+  logoPhotoKey  String?
   website       String?
   ruc           String?
   contactEmail  String?

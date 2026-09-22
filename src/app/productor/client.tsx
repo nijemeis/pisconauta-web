@@ -26,14 +26,16 @@ export function BodegaForm({ regions, existing }: { regions: RegionOpt[]; existi
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [cover, setCover] = useState<{ key?: string; url: string | null }>({ url: existing?.cover ?? null });
+  const [logo, setLogo] = useState<{ key?: string; url: string | null }>({ url: existing?.logo ?? null });
   const router = useRouter();
   const { toast, me, t } = useSession();
 
-  const uploadCover = async (file?: File) => {
+  const upload = (kind: "cover" | "logo") => async (file?: File) => {
     if (!file) return;
-    const form = new FormData(); form.append("file", file); form.append("kind", "cover");
-    try { const r = await api<{ key: string; url: string }>("/uploads", { form }); setCover(r); } catch (e) { toast((e as Error).message); }
+    const form = new FormData(); form.append("file", file); form.append("kind", kind);
+    try { const r = await api<{ key: string; url: string }>("/uploads", { form }); (kind === "cover" ? setCover : setLogo)(r); } catch (e) { toast((e as Error).message); }
   };
+  const uploadCover = upload("cover");
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,7 +44,7 @@ export function BodegaForm({ regions, existing }: { regions: RegionOpt[]; existi
     const body = {
       name: s("name"), regionSlug: region || null, valley: s("valley"), foundedYear: Number(f.get("foundedYear")) || null,
       description: s("description"), history: s("history"), visitInfo: s("visitInfo"), website: s("website"), ruc: s("ruc"),
-      contactEmail: s("contactEmail"), contactPhone: s("contactPhone"), ...(cover.key ? { coverPhotoKey: cover.key } : {}),
+      contactEmail: s("contactEmail"), contactPhone: s("contactPhone"), ...(cover.key ? { coverPhotoKey: cover.key } : {}), ...(logo.key ? { logoPhotoKey: logo.key } : {}),
     };
     setBusy(true); setError(null); setFields({});
     try {
@@ -82,6 +84,15 @@ export function BodegaForm({ regions, existing }: { regions: RegionOpt[]; existi
         <>
           <label className="field"><span className="mono">{t("bform.history")}</span><textarea className="input" name="history" maxLength={4000} defaultValue={existing.history ?? ""} /></label>
           <label className="field"><span className="mono">{t("bform.visits")}</span><textarea className="input" name="visitInfo" maxLength={2000} defaultValue={existing.visitInfo ?? ""} /></label>
+          <div className="field"><span className="mono">{t("bform.logo")}</span>
+            <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 10 }}>
+              <label className="slot" style={{ width: 96, height: 96, borderRadius: "50%" }}>
+                {logo.url ? <img src={`${logo.url}?w=200`} alt="" style={{ borderRadius: "50%" }} /> : <span className="mono">{t("bform.logoAdd")}</span>}
+                <input type="file" accept="image/*" hidden onChange={(e) => upload("logo")(e.target.files?.[0])} />
+              </label>
+              <p className="muted" style={{ fontSize: 12, flex: 1 }}>{t("bform.logoHint")}</p>
+            </div>
+          </div>
           <div className="field"><span className="mono">{t("bform.cover")}</span>
             <label className="slot" style={{ width: "100%", height: 140, marginTop: 10 }}>
               {cover.url ? <img src={`${cover.url}?w=600`} alt="" /> : <span className="mono">{t("bform.coverAdd")}</span>}

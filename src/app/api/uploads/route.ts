@@ -1,7 +1,7 @@
 import { ApiError, rateLimit, requireUser, route } from "@/lib/api";
 import { mediaUrl, storeImage } from "@/lib/storage";
 
-const FOLDERS = { pisco: "piscos", cover: "covers", review: "reviews" } as const;
+const FOLDERS = { pisco: "piscos", cover: "covers", logo: "logos", review: "reviews" } as const;
 
 /**
  * Direct multipart upload (field `file`, optional `kind`). With S3/Blobs in
