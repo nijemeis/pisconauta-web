@@ -1,0 +1,10 @@
+{
+  "name": "PISCONAUTA",
+  "short_name": "Pisconauta",
+  "description": "El pisco peruano, catalogado.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14100E",
+  "theme_color": "#14100E",
+  "icons": [{ "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }]
+}
