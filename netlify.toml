@@ -1,4 +1,4 @@
-# Web app + API on Netlify's Next.js runtime. Database: Neon (Netlify DB); images: Netlify Blobs.
+# Web app + API on Netlify's Next.js runtime. Database: Neon; images: Netlify Blobs.
 [build]
   command = "bash scripts/netlify-build.sh"
   publish = ".next"

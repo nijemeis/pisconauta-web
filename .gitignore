@@ -12,3 +12,4 @@ storage/
 
 # Local Netlify folder
 .netlify
+.neon
