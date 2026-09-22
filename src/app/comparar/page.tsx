@@ -42,14 +42,14 @@ export default async function Comparar({ searchParams }: { searchParams: Promise
         <p className="muted" style={{ marginTop: 24 }}>{t("cmp.pickPre")}<Link className="gold" href="/catalogo">{t("cmp.pickLink")}</Link>{t("cmp.pickPost")}</p>
       ) : (
         <div style={{ overflowX: "auto", marginTop: 28 }}>
-          <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 180 + piscos.length * 190 }}>
+          <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 180 + piscos.length * 210 }}>
             <thead>
               <tr>
                 <th />
                 {piscos.map((p) => (
                   <th key={p.id} style={{ padding: "0 14px 16px", textAlign: "left", fontWeight: 400, verticalAlign: "bottom" }}>
                     <Link href={`/pisco/${p.slug}`}>
-                      <div style={{ width: 120, aspectRatio: "3/4", border: "1px solid rgba(var(--gold-rgb),0.3)", overflow: "hidden" }}><Photo src={p.photo} alt={p.name} w={200} /></div>
+                      <div style={{ width: 160, aspectRatio: "3/4", border: "1px solid rgba(var(--gold-rgb),0.3)", overflow: "hidden" }}><Photo src={p.photo} alt={p.name} w={400} sizes="160px" /></div>
                       <div className="serif" style={{ fontSize: 22, marginTop: 10, lineHeight: 1.1 }}>{p.name}</div>
                     </Link>
                   </th>

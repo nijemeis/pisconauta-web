@@ -15,7 +15,7 @@ export function Photo({ src, alt, w = 400, eager, sizes }: { src: string | null;
   const url = img(src, w);
   if (!url) return <div className="skeleton" style={{ width: "100%", height: "100%" }} />;
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={url} srcSet={LADDER.map((x) => `${img(src, x)} ${x}w`).join(", ")} sizes={sizes ?? `${w}px`} alt={alt} loading={eager ? "eager" : "lazy"} decoding="async" />;
+  return <img className="photo-img" src={url} srcSet={LADDER.map((x) => `${img(src, x)} ${x}w`).join(", ")} sizes={sizes ?? `${w}px`} alt={alt} loading={eager ? "eager" : "lazy"} decoding="async" />;
 }
 
 export function PiscoCard({ p, children }: { p: Card; children?: React.ReactNode }) {
