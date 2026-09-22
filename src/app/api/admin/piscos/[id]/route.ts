@@ -10,7 +10,7 @@ export const POST = route<{ id: string }>(async (req, { id }) => {
   const { decision, note } = body.parse(await req.json());
   await db.pisco.update({
     where: { id },
-    data: decision === "publish" ? { status: "published", publishedAt: new Date(), reviewNote: null } : { status: "draft", reviewNote: note ?? "Revisa los datos y vuelve a enviar." },
+    data: decision === "publish" ? { status: "published", publishedAt: new Date(), reviewNote: null } : { status: "draft", reviewNote: note ?? "Revisa los datos y vuelve a publicar." },
   });
   await db.auditLog.create({ data: { actorId: admin.id, action: `pisco.${decision}`, entity: "pisco", entityId: id, after: { note } } });
   await reindexPisco(id);

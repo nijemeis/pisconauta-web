@@ -139,8 +139,11 @@ export async function savePisco(user: User, data: PiscoInputData, piscoId?: stri
   return id;
 }
 
-/** README validation: name, style, ≥1 variety, D.O., ABV 35–48, size and one bottle photo. */
-export async function submitForReview(user: User, piscoId: string) {
+/**
+ * Publishes a bottle straight away — the bodega itself was verified by an admin, so its bottles need no
+ * second review. Required: name, style, ≥1 variety, D.O., ABV 35–48, size and one bottle photo.
+ */
+export async function publishPisco(user: User, piscoId: string) {
   await loadEditable(user, piscoId);
   const p = await db.pisco.findUniqueOrThrow({ where: { id: piscoId }, include: { producer: true, varieties: true, photos: true } });
   if (p.producer.status !== "verified") {
@@ -158,6 +161,7 @@ export async function submitForReview(user: User, piscoId: string) {
   if (!p.photos.some((ph) => ph.kind === "bottle")) fields.photos = "Sube al menos una foto de la botella.";
   if (Object.keys(fields).length) throw new ApiError(422, "invalid", "Faltan datos para publicar.", fields);
 
-  await db.pisco.update({ where: { id: piscoId }, data: { status: "in_review", reviewNote: null } });
-  await db.auditLog.create({ data: { actorId: user.id, action: "pisco.submit", entity: "pisco", entityId: piscoId } });
+  await db.pisco.update({ where: { id: piscoId }, data: { status: "published", publishedAt: p.publishedAt ?? new Date(), reviewNote: null } });
+  await db.auditLog.create({ data: { actorId: user.id, action: "pisco.publish", entity: "pisco", entityId: piscoId } });
+  await reindexPisco(piscoId);
 }

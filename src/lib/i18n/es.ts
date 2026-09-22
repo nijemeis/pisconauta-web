@@ -388,7 +388,7 @@ export const es = {
   "prod.statusRejected": "Mi bodega · Verificación rechazada",
   "prod.editProfile": "Editar perfil",
   "prod.viewPublic": "Ver pública",
-  "prod.pendingNote": "Estamos verificando tu bodega. Puedes crear y guardar borradores; podrás enviarlos a revisión en cuanto esté verificada.",
+  "prod.pendingNote": "Estamos verificando tu bodega. Puedes crear y guardar borradores; podrás publicarlos en cuanto esté verificada.",
   "prod.rejectedNote": "No pudimos verificar tu bodega con los datos enviados. Revisa el RUC y los datos de contacto en «Editar perfil», o escríbenos.",
   "prod.statPublished": "Publicados",
   "prod.statInReview": "En revisión",
@@ -456,10 +456,10 @@ export const es = {
   "ed.draft": "Borrador",
   "ed.draftSaved": "Borrador guardado.",
   "ed.next": "Siguiente · {step}",
-  "ed.resubmit": "Guardar y reenviar a revisión",
+  "ed.resubmit": "Guardar y publicar cambios",
   "ed.inReview": "En revisión",
-  "ed.submit": "Enviar a revisión",
-  "ed.submitted": "Enviado a revisión. Te avisaremos al publicarlo.",
+  "ed.submit": "Publicar",
+  "ed.submitted": "¡Publicado! Tu botella ya está en el catálogo.",
 
   // ── admin ──
   "admin.title": "Administrar",

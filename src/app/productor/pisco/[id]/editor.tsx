@@ -100,7 +100,7 @@ export function BottleEditor({ pisco, taxonomy }: { pisco: PiscoDetail; taxonomy
     if (!(await save())) return;
     try {
       await api(`/piscos/${pisco.id}/publish`, { method: "POST" });
-      setStatus("in_review"); toast(t("ed.submitted"));
+      setStatus("published"); toast(t("ed.submitted"));
       router.push(home); router.refresh();
     } catch (e) {
       const err = e as ClientApiError;
@@ -224,7 +224,7 @@ export function BottleEditor({ pisco, taxonomy }: { pisco: PiscoDetail; taxonomy
           <button className="btn btn-outline" onClick={async () => { if (await save()) toast(t("ed.draftSaved")); }}>{t("ed.draft")}</button>
           {step < 2
             ? <button className="btn btn-gold" style={{ flex: 1 }} onClick={() => { save(); setStep(step + 1); window.scrollTo(0, 0); }}>{t("ed.next", { step: STEPS[step + 1] })}</button>
-            : <button className="btn btn-gold" style={{ flex: 1 }} onClick={publish} disabled={status === "in_review"}>{t(status === "published" ? "ed.resubmit" : status === "in_review" ? "ed.inReview" : "ed.submit")}</button>}
+            : <button className="btn btn-gold" style={{ flex: 1 }} onClick={publish} >{t(status === "published" ? "ed.resubmit" : "ed.submit")}</button>}
         </div>
       </div>
     </main>

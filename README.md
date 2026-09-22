@@ -26,7 +26,7 @@ The seed creates `admin@pisconauta.pe` with `ADMIN_PASSWORD` from `.env` (or pri
 ## How it fits together
 
 - **Roles**: visitor → `enthusiast` (rate, cellar, add places) · `producer` (owns a bodega) · `admin`.
-- **Producer onboarding**: sign up as *Productor* → register the bodega (`pending`) → admin verifies it → bottles go `draft → in_review → published`. Unverified bodegas can only save drafts. Admins can register bodegas on a producer's behalf, assign the owner by e-mail and edit any bottle.
+- **Producer onboarding**: sign up as *Productor* → register the bodega (`pending`) → admin verifies it → the bodega publishes bottles itself (`draft → published`, no per-bottle review). Unverified bodegas can only save drafts. Admins can still unpublish a bottle with a note. Admins can register bodegas on a producer's behalf, assign the owner by e-mail and edit any bottle.
 - **Admin console** (`/admin`): pending queue, all bodegas, all piscos, tasting-note vocabulary, contact messages.
 - **Ratings**: five criteria (aroma, sabor, cuerpo, final, equilibrio) × 5 stars; the overall score is their mean.
 - **Where to buy**: listings per bottle (store → maps, webshop → link), added by bodegas, admins or the community, in PEN/USD/EUR. Prices display in the visitor's preferred currency using weekly PEN-based exchange rates (`src/lib/rates.ts`).

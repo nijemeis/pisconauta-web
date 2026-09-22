@@ -63,9 +63,8 @@ export default async function Productor({ searchParams }: { searchParams: Promis
         </div>
       )}
 
-      <div className="stats">
+      <div className="stats" style={{ gridTemplateColumns: "1fr 1fr" }}>
         <div><div className="v">{b.piscos.filter((p) => p.status === "published").length}</div><div className="mono">{t("prod.statPublished")}</div></div>
-        <div><div className="v">{b.piscos.filter((p) => p.status === "in_review").length}</div><div className="mono">{t("prod.statInReview")}</div></div>
         <div><div className="v">{b.piscos.filter((p) => p.status === "draft").length}</div><div className="mono">{t("prod.statDrafts")}</div></div>
       </div>
 

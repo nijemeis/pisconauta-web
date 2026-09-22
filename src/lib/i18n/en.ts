@@ -389,7 +389,7 @@ export const en: Record<Key, string> = {
   "prod.statusRejected": "My bodega · Verification rejected",
   "prod.editProfile": "Edit profile",
   "prod.viewPublic": "View public page",
-  "prod.pendingNote": "We are verifying your bodega. You can create and save drafts; you'll be able to submit them for review as soon as it is verified.",
+  "prod.pendingNote": "We're verifying your bodega. You can create and save drafts; you'll be able to publish them as soon as it's verified.",
   "prod.rejectedNote": "We couldn't verify your bodega with the details provided. Check the RUC and contact details under “Edit profile”, or write to us.",
   "prod.statPublished": "Published",
   "prod.statInReview": "In review",
@@ -457,10 +457,10 @@ export const en: Record<Key, string> = {
   "ed.draft": "Draft",
   "ed.draftSaved": "Draft saved.",
   "ed.next": "Next · {step}",
-  "ed.resubmit": "Save and resubmit for review",
+  "ed.resubmit": "Save and publish changes",
   "ed.inReview": "In review",
-  "ed.submit": "Submit for review",
-  "ed.submitted": "Submitted for review. We'll let you know when it's published.",
+  "ed.submit": "Publish",
+  "ed.submitted": "Published! Your bottle is now in the catalogue.",
 
   // ── admin ──
   "admin.title": "Admin",
