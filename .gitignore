@@ -9,3 +9,6 @@ tsconfig.tsbuildinfo
 next-env.d.ts
 # uploaded images (local object storage)
 storage/
+
+# Local Netlify folder
+.netlify

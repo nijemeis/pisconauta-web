@@ -4,10 +4,14 @@ import path from "node:path";
 import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 
+import { getStore } from "@netlify/blobs";
+
 /**
- * Local-disk object storage. Keys are opaque ("piscos/ab12….jpg"); everything
- * goes through put/get so production can swap in S3 / Netlify Blobs here only.
+ * Object storage behind put/get. On Netlify (functions have no writable disk) images live in a
+ * Netlify Blobs store; locally they go to STORAGE_DIR. Keys are opaque ("piscos/ab12….jpg").
  */
+const onNetlify = () => !!process.env.NETLIFY || !!process.env.NETLIFY_BLOBS_CONTEXT;
+const blobs = () => getStore({ name: process.env.BLOBS_STORE || "media", consistency: "strong" });
 const root = () => path.resolve(process.env.STORAGE_DIR || "./storage");
 
 function safe(key: string): string {
@@ -17,12 +21,20 @@ function safe(key: string): string {
 }
 
 export async function putObject(key: string, data: Buffer) {
+  if (onNetlify()) { await blobs().set(key, new Blob([new Uint8Array(data)])); return; }
   const full = safe(key);
   await mkdir(path.dirname(full), { recursive: true });
   await writeFile(full, data);
 }
 
-export const getObject = (key: string) => readFile(safe(key));
+export async function getObject(key: string): Promise<Buffer> {
+  if (onNetlify()) {
+    const buf = await blobs().get(key, { type: "arrayBuffer" });
+    if (!buf) throw new Error("not found");
+    return Buffer.from(buf);
+  }
+  return readFile(safe(key));
+}
 
 export const mediaUrl = (key: string | null | undefined) => (key ? `/media/${key}` : null);
 

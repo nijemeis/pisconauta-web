@@ -1,7 +1,11 @@
-# Deploy the web app + API. Netlify's Next.js runtime turns route handlers into functions.
+# Web app + API on Netlify's Next.js runtime. Database: Neon (Netlify DB); images: Netlify Blobs.
 [build]
-  command = "npx prisma migrate deploy && npm run build"
+  # Migrations run against the direct (unpooled) Neon connection that Netlify DB provides.
+  command = "DATABASE_URL=$NETLIFY_DATABASE_URL DIRECT_DATABASE_URL=$NETLIFY_DATABASE_URL_UNPOOLED npx prisma migrate deploy && npm run build"
   publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -10,4 +14,5 @@
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
