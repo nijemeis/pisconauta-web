@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { PiscoDetail, ProducerDetail } from "@/lib/types";
+import { Spinner } from "@/components/motifs";
 import { ClientApiError, api, useSession } from "@/components/session";
 
 type RegionOpt = { slug: string; name: string; valleys: string[] };
@@ -17,7 +18,7 @@ export function NewBottleButton({ producerId }: { producerId: string }) {
       router.push(`/productor/pisco/${p.id}`);
     } catch (e) { toast((e as Error).message); setBusy(false); }
   };
-  return <button className="btn btn-gold btn-sm" onClick={create} disabled={busy}>{t("prod.newBottle")}</button>;
+  return <button className="btn btn-gold btn-sm" onClick={create} disabled={busy} aria-busy={busy}>{busy && <Spinner />}{t("prod.newBottle")}</button>;
 }
 
 export function BodegaForm({ regions, existing }: { regions: RegionOpt[]; existing?: ProducerDetail }) {
@@ -102,7 +103,7 @@ export function BodegaForm({ regions, existing }: { regions: RegionOpt[]; existi
         </>
       )}
       {error && <p className="err" role="alert">{error}</p>}
-      <button className="btn btn-gold btn-block" style={{ marginTop: 26 }} disabled={busy}>{busy ? t("common.saving") : t(existing ? "bform.saveProfile" : "bform.register")}</button>
+      <button className="btn btn-gold btn-block" style={{ marginTop: 26 }} disabled={busy} aria-busy={busy}>{busy && <Spinner />}{busy ? t("common.saving") : t(existing ? "bform.saveProfile" : "bform.register")}</button>
     </form>
   );
 }

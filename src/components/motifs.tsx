@@ -49,3 +49,8 @@ export function SectionHead({ label, gloss }: { label: string; gloss?: string })
     </div>
   );
 }
+
+/** Inline activity indicator for buttons: a chakana that rotates while `aria-busy` work runs. */
+export function Spinner({ size = 14 }: { size?: number }) {
+  return <span className="spinner" aria-hidden><Chakana size={size} color="currentColor" /></span>;
+}

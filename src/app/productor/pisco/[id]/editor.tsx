@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AwardLevel, FlavourAxis, PiscoDetail, PiscoInput, PiscoStyle, StillType, Taxonomy } from "@/lib/types";
 import { fmt, labels } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
+import { Spinner } from "@/components/motifs";
 import { ClientApiError, api, useSession } from "@/components/session";
 
 type PhotoIn = NonNullable<PiscoInput["photos"]>[number] & { url: string };
@@ -55,6 +56,8 @@ export function BottleEditor({ pisco, taxonomy }: { pisco: PiscoDetail; taxonomy
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState(pisco.status);
   const [saveState, setSaveState] = useState<"saved" | "dirty" | "saving" | "error">("saved");
+  // Which footer button is waiting on the server, so it can show a spinner and block double taps.
+  const [busy, setBusy] = useState<"draft" | "next" | "publish" | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(pisco.reviewNote);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
@@ -96,8 +99,9 @@ export function BottleEditor({ pisco, taxonomy }: { pisco: PiscoDetail; taxonomy
   };
 
   const publish = async () => {
-    setErrors({}); setBanner(null);
-    if (!(await save())) return;
+    if (busy) return;
+    setBusy("publish"); setErrors({}); setBanner(null);
+    if (!(await save())) { setBusy(null); return; }
     try {
       await api(`/piscos/${pisco.id}/publish`, { method: "POST" });
       setStatus("published"); toast(t("ed.submitted"));
@@ -106,7 +110,18 @@ export function BottleEditor({ pisco, taxonomy }: { pisco: PiscoDetail; taxonomy
       const err = e as ClientApiError;
       setBanner(err.message);
       if (err.fields) { setErrors(err.fields); const f = Object.keys(err.fields); setStep(f.some((k) => ["name", "photos"].includes(k)) ? 0 : 1); }
-    }
+    } finally { setBusy(null); }
+  };
+  const saveDraft = async () => {
+    if (busy) return;
+    setBusy("draft");
+    try { if (await save()) toast(t("ed.draftSaved")); } finally { setBusy(null); }
+  };
+  const nextStep = async () => {
+    if (busy) return;
+    setBusy("next");
+    try { await save(); } finally { setBusy(null); }
+    setStep(step + 1); window.scrollTo(0, 0);
   };
 
   const toggleVariety = (slug: string) => set("varieties", d.style === "puro" ? [slug] : d.varieties.includes(slug) ? d.varieties.filter((v) => v !== slug) : [...d.varieties, slug]);
@@ -221,10 +236,10 @@ export function BottleEditor({ pisco, taxonomy }: { pisco: PiscoDetail; taxonomy
 
       <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "var(--bar)", borderTop: "1px solid rgba(var(--gold-rgb),0.25)", padding: "14px 20px calc(14px + env(safe-area-inset-bottom))", zIndex: 35 }}>
         <div style={{ display: "flex", gap: 10, maxWidth: 720, margin: "0 auto" }}>
-          <button className="btn btn-outline" onClick={async () => { if (await save()) toast(t("ed.draftSaved")); }}>{t("ed.draft")}</button>
+          <button className="btn btn-outline" onClick={saveDraft} disabled={!!busy} aria-busy={busy === "draft"}>{busy === "draft" && <Spinner />}{t("ed.draft")}</button>
           {step < 2
-            ? <button className="btn btn-gold" style={{ flex: 1 }} onClick={() => { save(); setStep(step + 1); window.scrollTo(0, 0); }}>{t("ed.next", { step: STEPS[step + 1] })}</button>
-            : <button className="btn btn-gold" style={{ flex: 1 }} onClick={publish} >{t(status === "published" ? "ed.resubmit" : "ed.submit")}</button>}
+            ? <button className="btn btn-gold" style={{ flex: 1 }} onClick={nextStep} disabled={!!busy} aria-busy={busy === "next"}>{busy === "next" && <Spinner />}{t("ed.next", { step: STEPS[step + 1] })}</button>
+            : <button className="btn btn-gold" style={{ flex: 1 }} onClick={publish} disabled={!!busy} aria-busy={busy === "publish"}>{busy === "publish" && <Spinner />}{t(status === "published" ? "ed.resubmit" : "ed.submit")}</button>}
         </div>
       </div>
     </main>
