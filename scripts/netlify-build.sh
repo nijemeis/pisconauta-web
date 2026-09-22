@@ -5,5 +5,5 @@
 set -euo pipefail
 export DATABASE_URL="${DATABASE_URL:-$NETLIFY_DATABASE_URL}"
 export DIRECT_DATABASE_URL="${DIRECT_DATABASE_URL:-${NETLIFY_DATABASE_URL_UNPOOLED:-${DATABASE_URL/-pooler/}}}"
-npx prisma migrate deploy
+if [ "${SKIP_MIGRATIONS:-0}" = "1" ]; then echo "Skipping migrations (SKIP_MIGRATIONS=1)"; else npx prisma migrate deploy; fi
 npm run build
