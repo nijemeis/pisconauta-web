@@ -45,7 +45,7 @@ export default async function Bodega({ params, searchParams }: Props) {
         <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 14 }}>
           {b.piscos.map((p) => (
             <Link key={p.id} href={`/pisco/${p.slug}`}>
-              <div style={{ aspectRatio: "3/4", overflow: "hidden", border: "1px solid rgba(var(--line-rgb),0.1)" }}><Photo src={p.photo} alt={p.name} /></div>
+              <div style={{ aspectRatio: "3/4", overflow: "hidden", border: "1px solid rgba(var(--line-rgb),0.1)" }}><Photo src={p.photo} alt={p.name} sizes="(max-width: 900px) 50vw, 220px" /></div>
               <div className="serif" style={{ fontSize: 18, marginTop: 8 }}>{p.name}</div>
               <div className="mono" style={{ letterSpacing: "0.06em", marginTop: 2 }}>{cardMeta(p)} · {dec(p.avgRating)}</div>
             </Link>

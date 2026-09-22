@@ -51,7 +51,7 @@ export default async function Ficha({ params }: Props) {
       <div className="ficha">
         <section className="ficha-hero">
           <SteppedBand />
-          <div className="vitrine"><Photo src={p.photo} alt={p.name} w={600} eager /><Brackets /></div>
+          <div className="vitrine"><Photo src={p.photo} alt={p.name} w={600} eager sizes="(max-width: 900px) 100vw, 300px" /><Brackets /></div>
           <Link href={`/bodega/${p.producerInfo.slug}`} className="ficha-bodega">{p.producer.name}{p.producerInfo.verified ? " ✓" : ""}</Link>
           <h1 className="ficha-name">{p.name}</h1>
           <p className="ficha-sub">{[p.vintage ? t("ficha.vintage", { year: p.vintage }) : null, p.valley ? t("common.valleyOf", { valley: p.valley }) : p.region?.name].filter(Boolean).join(" · ")}</p>

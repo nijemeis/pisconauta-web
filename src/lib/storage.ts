@@ -38,10 +38,10 @@ export async function getObject(key: string): Promise<Buffer> {
 
 export const mediaUrl = (key: string | null | undefined) => (key ? `/media/${key}` : null);
 
-/** Normalises an upload: auto-rotate, strip EXIF, cap at 1600px, JPEG. */
+/** Normalises an upload: auto-rotate, strip EXIF, cap at 2400px, JPEG. Derivatives are cut from this master. */
 export async function storeImage(folder: string, input: Buffer) {
-  const img = sharp(input).rotate().resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true });
-  const { data, info } = await img.jpeg({ quality: 86 }).toBuffer({ resolveWithObject: true });
+  const img = sharp(input).rotate().resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true });
+  const { data, info } = await img.jpeg({ quality: 90, mozjpeg: true }).toBuffer({ resolveWithObject: true });
   const key = `${folder}/${randomBytes(9).toString("base64url")}.jpg`;
   await putObject(key, data);
   return { key, width: info.width, height: info.height, phash: await dhash(data) };
