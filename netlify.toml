@@ -1,7 +1,6 @@
 # Web app + API on Netlify's Next.js runtime. Database: Neon (Netlify DB); images: Netlify Blobs.
 [build]
-  # Migrations run against the direct (unpooled) Neon connection that Netlify DB provides.
-  command = "DATABASE_URL=$NETLIFY_DATABASE_URL DIRECT_DATABASE_URL=$NETLIFY_DATABASE_URL_UNPOOLED npx prisma migrate deploy && npm run build"
+  command = "bash scripts/netlify-build.sh"
   publish = ".next"
 
 [build.environment]
