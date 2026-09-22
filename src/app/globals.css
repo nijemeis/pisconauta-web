@@ -242,7 +242,7 @@ h1, h2, h3, p { margin: 0; font-weight: 400; }
 .feature { display: flex; gap: 22px; padding: 22px; border: 1px solid rgba(var(--gold-rgb), 0.3); margin-top: 14px; position: relative; overflow: hidden; isolation: isolate;
   background: linear-gradient(135deg, rgba(var(--gold-rgb), 0.12), transparent 60%); }
 /* Vineyard photo fading in from the right; the card ground bleeds over it so the text stays legible. */
-.feature::before { content: ""; position: absolute; inset: 0; z-index: -1; background: url("/feature-vineyard.webp") right 35% / cover no-repeat; opacity: 0.85; }
+.feature::before { content: ""; position: absolute; inset: 0; z-index: -1; background: url("/feature-vineyard.webp") right 30% / cover no-repeat; opacity: 0.85; }
 .feature::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, var(--card) 0%, var(--card) 42%, rgba(26, 20, 17, 0.45) 62%, rgba(26, 20, 17, 0) 100%); }
 :root[data-theme="light"] .feature::after { background: linear-gradient(90deg, var(--card) 0%, var(--card) 42%, rgba(255, 252, 246, 0.6) 68%, rgba(255, 252, 246, 0.2) 100%); }
 .feature > * { position: relative; }
