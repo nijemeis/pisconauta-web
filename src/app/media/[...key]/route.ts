@@ -15,5 +15,13 @@ export async function GET(req: Request, ctx: { params: Promise<{ key: string[] }
     data = await sharp(data).resize({ width, withoutEnlargement: true }).webp({ quality: 84 }).toBuffer();
     type = "image/webp";
   }
-  return new Response(new Uint8Array(data), { headers: { "content-type": type, "cache-control": "public, max-age=31536000, immutable" } });
+  return new Response(new Uint8Array(data), {
+    headers: {
+      "content-type": type,
+      "cache-control": "public, max-age=31536000, immutable",
+      // Netlify's CDN keys on the path only unless told otherwise — without this every ?w= size shares one cache entry.
+      "netlify-vary": "query=w",
+      "cache-tag": "media",
+    },
+  });
 }
