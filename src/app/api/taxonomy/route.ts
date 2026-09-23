@@ -1,8 +1,8 @@
 import { db } from "@/lib/db";
-import { route } from "@/lib/api";
+import { memoize, route } from "@/lib/api";
 import type { Taxonomy } from "@/lib/types";
 
-export const GET = route(async (): Promise<Taxonomy> => {
+export const GET = route((): Promise<Taxonomy> => memoize("taxonomy", 300_000, async () => {
   const [regions, varieties, terms] = await Promise.all([
     db.region.findMany({ orderBy: { sort: "asc" } }),
     db.variety.findMany({ orderBy: { sort: "asc" } }),
@@ -13,4 +13,4 @@ export const GET = route(async (): Promise<Taxonomy> => {
     varieties: varieties.map((v) => ({ id: v.id, slug: v.slug, name: v.name, aromatic: v.aromatic })),
     noteTerms: terms.map((t) => ({ id: t.id, es: t.termEs, en: t.termEn, family: t.family })),
   };
-});
+}), { cache: true });

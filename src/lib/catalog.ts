@@ -1,6 +1,7 @@
 import "server-only";
 import { Prisma, type PiscoStyle } from "@prisma/client";
 import { db } from "./db";
+import { forget } from "./api";
 import { getRates, toPenCents } from "./rates";
 import { mediaUrl } from "./storage";
 import type { Facets, PiscoCard, PiscoDetail, ProducerCard, ProducerDetail, SearchParams, SearchResult } from "./types";
@@ -278,6 +279,7 @@ export async function discover() {
 
 /** Keeps the denormalised columns (search text, min price, ratings, bodega stats) in step. */
 export async function reindexPisco(piscoId: string) {
+  forget("discover"); forget("facets:"); forget("search:"); forget("pisco:");
   const p = await db.pisco.findUnique({
     where: { id: piscoId },
     include: {

@@ -29,6 +29,26 @@ export async function requireUser(...roles: UserRole[]): Promise<User> {
 
 type Ctx<P> = { params: Promise<P> };
 
+/** True when the request carries no identity, so the response can be shared by the CDN. */
+export function isAnonymous(req: Request): boolean {
+  if (req.headers.get("authorization")) return false;
+  return !/(^|;\s*)pn_session=/.test(req.headers.get("cookie") ?? "");
+}
+
+/** Cache-Control for public catalogue reads: browsers 30 s, CDN 2 min, stale while revalidating. */
+export const PUBLIC_CACHE = "public, max-age=30, s-maxage=120, stale-while-revalidate=600";
+
+const memo = new Map<string, { at: number; value: unknown }>();
+/** Tiny per-process memo for expensive read models (discover, facets…); TTL in ms. */
+export async function memoize<T>(key: string, ttl: number, fn: () => Promise<T>): Promise<T> {
+  const hit = memo.get(key);
+  if (hit && Date.now() - hit.at < ttl) return hit.value as T;
+  const value = await fn();
+  memo.set(key, { at: Date.now(), value });
+  return value;
+}
+export const forget = (prefix: string) => { for (const k of memo.keys()) if (k.startsWith(prefix)) memo.delete(k); };
+
 /** Cookie `pn_locale` (web), else `Accept-Language` (the mobile app sends no cookie), else Spanish. */
 export function requestLocale(req: Request): Locale {
   const cookie = req.headers.get("cookie")?.match(new RegExp(`(?:^|;\\s*)${LOCALE_COOKIE}=(es|en)(?:;|$)`))?.[1];
@@ -36,12 +56,14 @@ export function requestLocale(req: Request): Locale {
 }
 
 /** Wraps a route handler: JSON out, ApiError/Zod errors mapped to status codes. */
-export function route<P = Record<string, string>>(fn: (req: Request, params: P) => Promise<unknown>) {
+export function route<P = Record<string, string>>(fn: (req: Request, params: P) => Promise<unknown>, opts: { cache?: boolean } = {}) {
   return async (req: Request, ctx: Ctx<P>) => {
     try {
       const out = await fn(req, await ctx.params);
       if (out instanceof Response) return out;
-      return NextResponse.json(out ?? { ok: true });
+      const res = NextResponse.json(out ?? { ok: true });
+      if (opts.cache && req.method === "GET" && isAnonymous(req)) { res.headers.set("cache-control", PUBLIC_CACHE); res.headers.set("vary", "Accept-Language, Cookie, Authorization"); }
+      return res;
     } catch (e) {
       const locale = requestLocale(req);
       if (e instanceof ApiError) {

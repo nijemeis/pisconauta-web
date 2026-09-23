@@ -4,7 +4,7 @@ import { getProducer, listProducers } from "@/lib/catalog";
 import { uniqueSlug } from "@/lib/slug";
 import { producerInput } from "@/lib/producer-input";
 
-export const GET = route(async (req) => ({ items: await listProducers(new URL(req.url).searchParams.get("region") ?? undefined) }));
+export const GET = route(async (req) => ({ items: await listProducers(new URL(req.url).searchParams.get("region") ?? undefined) }), { cache: true });
 
 
 /** Claim/create a bodega. It starts `pending`; an admin verifies it before bottles can go public. */
