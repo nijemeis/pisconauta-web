@@ -161,7 +161,12 @@ export async function publishPisco(user: User, piscoId: string) {
   if (!p.photos.some((ph) => ph.kind === "bottle")) fields.photos = "Sube al menos una foto de la botella.";
   if (Object.keys(fields).length) throw new ApiError(422, "invalid", "Faltan datos para publicar.", fields);
 
-  await db.pisco.update({ where: { id: piscoId }, data: { status: "published", publishedAt: p.publishedAt ?? new Date(), reviewNote: null } });
+  // Drafts are created under the placeholder name, so mint the public slug from the real name now.
+  let slug = p.slug;
+  if (/^nueva-botella(-|$)/.test(slug) || /^new-bottle(-|$)/.test(slug)) {
+    slug = await uniqueSlug(`${p.name} ${p.producer.name}`, async (s) => !!(await db.pisco.findFirst({ where: { slug: s, id: { not: piscoId } } })));
+  }
+  await db.pisco.update({ where: { id: piscoId }, data: { status: "published", publishedAt: p.publishedAt ?? new Date(), reviewNote: null, slug } });
   await db.auditLog.create({ data: { actorId: user.id, action: "pisco.publish", entity: "pisco", entityId: piscoId } });
   await reindexPisco(piscoId);
 }
