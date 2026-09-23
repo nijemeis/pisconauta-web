@@ -1,0 +1,104 @@
+# DigitalOcean App Platform spec for PISCONAUTA (web + API).
+# Import in the DO console (Apps → Create → "Edit your app spec"), or: doctl apps create --spec .do/app.yaml
+# Values marked SECRET are entered in the DO UI, never committed.
+name: pisconauta
+region: ams
+
+services:
+  - name: web
+    github:
+      repo: nijemeis/pisconauta-web
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: npm ci && npm run build
+    # Single instance: migrations + the base seed run on start, so no separate job is needed.
+    run_command: npm run start:prod
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    instance_count: 1
+    http_port: 8080
+    health_check:
+      http_path: /api/health
+      initial_delay_seconds: 25
+      period_seconds: 15
+      failure_threshold: 3
+    routes:
+      - path: /
+    envs:
+      - key: DATABASE_URL
+        value: ${pisconauta-db.DATABASE_URL}
+        scope: RUN_AND_BUILD_TIME
+      - key: DIRECT_DATABASE_URL
+        value: ${pisconauta-db.DATABASE_URL}
+        scope: RUN_AND_BUILD_TIME
+      - key: NODE_ENV
+        # RUN_TIME only — at build time it would strip devDependencies (prisma, typescript, tsx).
+        value: production
+        scope: RUN_TIME
+      - key: APP_URL
+        value: https://pisconauta.com
+        scope: RUN_AND_BUILD_TIME
+      - key: ADMIN_EMAIL
+        value: admin@pisconauta.pe
+        scope: RUN_TIME
+      - key: ADMIN_PASSWORD
+        type: SECRET
+        value: REPLACE_IN_DO_UI
+        scope: RUN_TIME
+      - key: AUTH_SECRET
+        type: SECRET
+        value: REPLACE_IN_DO_UI
+        scope: RUN_TIME
+      - key: GOOGLE_CLIENT_ID
+        value: REPLACE_IN_DO_UI
+        scope: RUN_TIME
+      - key: GOOGLE_CLIENT_SECRET
+        type: SECRET
+        value: REPLACE_IN_DO_UI
+        scope: RUN_TIME
+      # --- Images: DigitalOcean Spaces (S3-compatible). Mandatory in production. ---
+      - key: S3_BUCKET
+        value: pisconauta-media
+        scope: RUN_TIME
+      - key: S3_REGION
+        value: ams3
+        scope: RUN_TIME
+      - key: S3_ENDPOINT
+        value: https://ams3.digitaloceanspaces.com
+        scope: RUN_TIME
+      - key: S3_ACCESS_KEY_ID
+        type: SECRET
+        value: REPLACE_IN_DO_UI
+        scope: RUN_TIME
+      - key: S3_SECRET_ACCESS_KEY
+        type: SECRET
+        value: REPLACE_IN_DO_UI
+        scope: RUN_TIME
+      # --- Public identity (legal pages, contact) ---
+      - key: NEXT_PUBLIC_OPERATOR
+        value: FIA International
+        scope: RUN_AND_BUILD_TIME
+      - key: NEXT_PUBLIC_OPERATOR_ADDRESS
+        value: Leusden, Países Bajos
+        scope: RUN_AND_BUILD_TIME
+      - key: NEXT_PUBLIC_CONTACT_EMAIL
+        value: hola@pisconauta.com
+        scope: RUN_AND_BUILD_TIME
+      - key: NEXT_PUBLIC_PRIVACY_EMAIL
+        value: privacidad@pisconauta.com
+        scope: RUN_AND_BUILD_TIME
+      # Optional: Google Cloud Vision key for OCR label matching
+      - key: VISION_API_KEY
+        type: SECRET
+        value: ""
+        scope: RUN_TIME
+
+databases:
+  # The existing managed Postgres cluster (shared with Dealiteful / Nije3d), separate database.
+  # Create the `pisconauta` database on it first (Users & Databases tab); cluster_name must match exactly.
+  - name: pisconauta-db
+    engine: PG
+    version: "17"
+    production: true
+    cluster_name: REPLACE_WITH_YOUR_CLUSTER_NAME
+    db_name: pisconauta

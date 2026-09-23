@@ -12,15 +12,17 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "setup": "prisma generate && prisma migrate dev && tsx prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "start:prod": "prisma migrate deploy && tsx prisma/seed.ts --base && next start -p ${PORT:-8080}"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1138.0",
     "@neon/config": "^1.7.2",
     "@neon/env": "^1.4.3",
     "@netlify/blobs": "^11.1.0",

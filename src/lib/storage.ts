@@ -5,14 +5,30 @@ import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 
 import { getStore } from "@netlify/blobs";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 /**
- * Object storage behind put/get. On Netlify (functions have no writable disk) images live in a
- * Netlify Blobs store; locally they go to STORAGE_DIR. Keys are opaque ("piscos/ab12….jpg").
+ * Object storage behind put/get. Keys are opaque ("piscos/ab12….jpg").
+ *  - S3_BUCKET set → an S3-compatible bucket (DigitalOcean Spaces in production).
+ *  - On Netlify → Netlify Blobs (kept for the migration away from Netlify).
+ *  - Otherwise → local disk under STORAGE_DIR.
+ * App Platform disks are ephemeral, so production refuses to run without a bucket.
  */
+const useS3 = () => !!process.env.S3_BUCKET;
 const onNetlify = () => !!process.env.NETLIFY || !!process.env.NETLIFY_BLOBS_CONTEXT;
 const blobs = () => getStore({ name: process.env.BLOBS_STORE || "media", consistency: "strong" });
 const root = () => path.resolve(process.env.STORAGE_DIR || "./storage");
+
+let s3Client: S3Client | undefined;
+const s3 = () => (s3Client ??= new S3Client({
+  region: process.env.S3_REGION || "us-east-1",
+  endpoint: process.env.S3_ENDPOINT || undefined,
+  forcePathStyle: false,
+  credentials: { accessKeyId: process.env.S3_ACCESS_KEY_ID || "", secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "" },
+}));
+
+export const storageKind = () => (useS3() ? "spaces" : onNetlify() ? "netlify-blobs" : "local");
+export const storageConfigured = () => useS3() || onNetlify() || process.env.NODE_ENV !== "production" || process.env.ALLOW_LOCAL_STORAGE === "true";
 
 function safe(key: string): string {
   const full = path.resolve(root(), key);
@@ -21,6 +37,11 @@ function safe(key: string): string {
 }
 
 export async function putObject(key: string, data: Buffer) {
+  if (!storageConfigured()) throw new Error("File storage is not configured: set S3_BUCKET, S3_ENDPOINT, S3_REGION, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY.");
+  if (useS3()) {
+    await s3().send(new PutObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key, Body: data, ContentType: key.endsWith(".jpg") ? "image/jpeg" : "application/octet-stream", ACL: "private" }));
+    return;
+  }
   if (onNetlify()) { await blobs().set(key, new Blob([new Uint8Array(data)])); return; }
   const full = safe(key);
   await mkdir(path.dirname(full), { recursive: true });
@@ -28,6 +49,10 @@ export async function putObject(key: string, data: Buffer) {
 }
 
 export async function getObject(key: string): Promise<Buffer> {
+  if (useS3()) {
+    const res = await s3().send(new GetObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key }));
+    return Buffer.from(await res.Body!.transformToByteArray());
+  }
   if (onNetlify()) {
     const buf = await blobs().get(key, { type: "arrayBuffer" });
     if (!buf) throw new Error("not found");
