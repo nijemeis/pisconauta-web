@@ -19,9 +19,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ key: string[] }
     headers: {
       "content-type": type,
       "cache-control": "public, max-age=31536000, immutable",
-      // Netlify's CDN keys on the path only unless told otherwise — without this every ?w= size shares one cache entry.
-      "netlify-vary": "query=w",
-      "cache-tag": "media",
     },
   });
 }

@@ -39,7 +39,7 @@ The seed creates `admin@pisconauta.pe` with `ADMIN_PASSWORD` from `.env` (or pri
 
 ## Deploy
 
-`netlify.toml` is set up for Netlify's Next.js runtime (`prisma migrate deploy && npm run build`). Needs `DATABASE_URL` (e.g. Neon), `AUTH_SECRET`, `ADMIN_PASSWORD`, and production object storage before real uploads.
+DigitalOcean App Platform — see [docs/deploy-digitalocean.md](docs/deploy-digitalocean.md). Spec in `.do/app.yaml`; `npm run start:prod` runs migrations + the base seed before starting.
 
 ## Not built yet
 
