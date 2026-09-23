@@ -2,7 +2,8 @@
 # Import in the DO console (Apps → Create → "Edit your app spec"), or: doctl apps create --spec .do/app.yaml
 # Values marked SECRET are entered in the DO UI, never committed.
 name: pisconauta
-region: ams
+# Same region as the managed Postgres cluster — an ocean between app and database cost ~0.4 s per query.
+region: tor
 
 services:
   - name: web
