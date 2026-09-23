@@ -140,6 +140,7 @@ export function Footer() {
           <Link href="/cuenta?rol=productor">{t("top.producerCta")}</Link>
           <Link href="/privacidad">{t("menu.privacy")}</Link>
           <Link href="/terminos">{t("footer.terms")}</Link>
+          <Link href="/cuenta/eliminar">{t("footer.deleteAccount")}</Link>
         </nav>
       </div>
     </footer>
