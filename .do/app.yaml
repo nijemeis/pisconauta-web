@@ -25,9 +25,13 @@ services:
     routes:
       - path: /
     envs:
+      # Pooled (PgBouncer, transaction mode) URL for the app — set in the DO UI as a SECRET:
+      #   <pisconauta-pool URI>&pgbouncer=true&connection_limit=5
       - key: DATABASE_URL
-        value: ${pisconauta-db.DATABASE_URL}
+        type: SECRET
+        value: REPLACE_WITH_POOL_URL
         scope: RUN_AND_BUILD_TIME
+      # Direct cluster URL — only Prisma migrations use it (PgBouncer can't run them).
       - key: DIRECT_DATABASE_URL
         value: ${pisconauta-db.DATABASE_URL}
         scope: RUN_AND_BUILD_TIME
